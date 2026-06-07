@@ -1,0 +1,17 @@
+flask>=3.0.0
+flask-cors>=4.0.0
+torch>=2.0.0
+torchaudio>=2.0.0
+transformers>=4.30.0
+whisper-timestamped>=1.14.4
+pandas>=1.5.0
+numpy>=1.23.0
+librosa>=0.10.0
+scipy>=1.10.0
+scikit-learn>=1.2.0
+python-dotenv>=0.21.0
+pillow>=9.0.0
+werkzeug>=2.3.0
+requests>=2.31.0
+gdown>=5.1.0
+werkzeug>=3.0.0

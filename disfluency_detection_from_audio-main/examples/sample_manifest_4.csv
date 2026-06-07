@@ -1,0 +1,5 @@
+path,label
+examples/sample_audio_4/fluent_1.wav,fluent
+examples/sample_audio_4/fluent_2.wav,fluent
+examples/sample_audio_4/disfluent_1.wav,disfluent
+examples/sample_audio_4/disfluent_2.wav,disfluent
