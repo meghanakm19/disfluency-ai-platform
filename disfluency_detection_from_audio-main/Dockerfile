@@ -1,9 +1,7 @@
 FROM python:3.9-slim
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libsndfile1 \
     libsndfile1-dev \
@@ -11,28 +9,20 @@ RUN apt-get update && apt-get install -y \
     sox \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
 COPY requirements.txt .
 
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
 COPY . .
 
-# Create necessary directories
 RUN mkdir -p uploads/audio results data demo_models
 
-# Download models
-RUN python download_models.py
+# RUN python download_models.py
 
-# Expose port
 EXPOSE 5000
 
-# Set environment variables
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
 
-# Run the application
 CMD ["python", "run.py"]
