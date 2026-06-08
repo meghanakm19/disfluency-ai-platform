@@ -222,6 +222,9 @@ class ModelInferenceService:
                 
                 # Convert to probabilities
                 probs = torch.sigmoid(logits)
+                print("ACOUSTIC MIN:", float(probs.min()))
+                print("ACOUSTIC MAX:", float(probs.max()))
+                print("ACOUSTIC MEAN:", float(probs.mean())
                 predictions = (probs > 0.60).int()
                 print(f"[DEBUG] _analyze_acoustic: predictions shape = {predictions.shape}")
                 
