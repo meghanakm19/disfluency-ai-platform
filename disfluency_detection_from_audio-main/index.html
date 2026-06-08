@@ -1764,6 +1764,32 @@
             } else if (reportCard) {
                 reportCard.style.display = 'none';
             }
+
+            // Display signal features
+            const features = results.signal_features || {};
+            if (Object.keys(features).length > 0) {
+                let featuresHtml = `<div style="margin-top:18px"><h4>🎵 Signal Features</h4><ul style="padding-left:18px;">
+                    <li><strong>MFCC (mean):</strong> ${features.mfcc_mean ? features.mfcc_mean.map(v=>v.toFixed(2)).join(', ') : 'N/A'}</li>
+                    <li><strong>MFCC (std):</strong> ${features.mfcc_std ? features.mfcc_std.map(v=>v.toFixed(2)).join(', ') : 'N/A'}</li>
+                    <li><strong>Pitch mean / std:</strong> ${features.pitch_mean?.toFixed(2) || '0.00'} Hz / ${features.pitch_std?.toFixed(2) || '0.00'}</li>
+                    <li><strong>Energy mean / std:</strong> ${features.energy_mean?.toFixed(4) || '0.0000'} / ${features.energy_std?.toFixed(4) || '0.0000'}</li>
+                    <li><strong>Voiced ratio:</strong> ${(features.voiced_ratio*100 || 0).toFixed(1)}%</li>
+                    <li><strong>Pauses:</strong> ${features.pause_count || 0} (avg ${features.avg_pause?.toFixed(2) || '0.00'}s, total ${features.total_pause_time?.toFixed(2) || '0.00'}s)</li>
+                    <li><strong>Repetitions (heuristic):</strong> ${features.repetitions || 0}</li>
+                    <li><strong>Prolongations (heuristic):</strong> ${features.prolongations || 0}</li>
+                </ul></div>`;
+
+                // Remove existing signal features section if present
+                let existing = document.getElementById('signalFeaturesSection');
+                if (existing) existing.remove();
+                
+                // Add signal features section to results card
+                const resultsCard = document.getElementById('resultsCard');
+                const div = document.createElement('div');
+                div.id = 'signalFeaturesSection';
+                div.innerHTML = featuresHtml;
+                resultsCard.appendChild(div);
+            }
         }
 
         function buildTherapistReport(results) {

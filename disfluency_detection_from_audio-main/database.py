@@ -5,6 +5,7 @@ SQLite database for storing analysis results and user data
 import sqlite3
 import json
 import os
+import uuid
 from datetime import datetime
 from pathlib import Path
 
@@ -72,8 +73,8 @@ class Database:
                 VALUES (?, ?)
             ''', (user_id, datetime.now()))
             
-            # Generate analysis ID
-            analysis_id = f"{user_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            # Generate analysis ID with UUID to ensure uniqueness
+            analysis_id = f"{user_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
             
             # Save analysis
             cursor.execute('''
@@ -172,7 +173,7 @@ class Database:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
-            # Build query based on user_id filter
+            # Build query based on whether user_id filter is provided
             if user_id:
                 cursor.execute('SELECT COUNT(*) FROM analyses WHERE user_id = ?', (user_id,))
                 total = cursor.fetchone()[0]
