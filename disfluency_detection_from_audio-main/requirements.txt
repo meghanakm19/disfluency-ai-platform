@@ -1,7 +1,7 @@
 flask==2.3.2
 flask-cors==4.0.0
-torch==1.12.1
-torchaudio==0.12.1
+torch==2.2.2
+torchaudio==2.2.2
 transformers==4.22.2
 whisper_timestamped==1.14.4
 pandas==1.5.0
