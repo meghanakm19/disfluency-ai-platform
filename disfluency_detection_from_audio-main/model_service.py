@@ -222,7 +222,7 @@ class ModelInferenceService:
                 
                 # Convert to probabilities
                 probs = torch.sigmoid(logits)
-                predictions = (probs > 0.75).int()
+                predictions = (probs > 0.60).int()
                 print(f"[DEBUG] _analyze_acoustic: predictions shape = {predictions.shape}")
                 
                 # Generate frame-level predictions
@@ -331,7 +331,7 @@ class ModelInferenceService:
                 multimodal_logits = self.multimodal_model(language_emb, acoustic_emb)
                 print(f"[DEBUG] multimodal_logits shape: {multimodal_logits.shape}")
                 multimodal_probs = torch.sigmoid(multimodal_logits)
-                multimodal_preds = (multimodal_probs > 0.75).int()
+                multimodal_preds = (multimodal_probs > 0.60).int()
                 
                 # Generate predictions
                 frame_preds = self._generate_frame_predictions(
@@ -416,7 +416,7 @@ class ModelInferenceService:
                 frame_prob = frame_probs_np[frame_idx] if frame_probs_np is not None and frame_idx < frame_probs_np.shape[0] else frame_pred
                 
                 # Determine if disfluent and which type
-                is_disfluent = bool(np.max(frame_prob) > 0.75)
+                is_disfluent = bool(np.max(frame_prob) > 0.60)
                 disfluency_types = []
 
                 for i in range(len(frame_prob)):
