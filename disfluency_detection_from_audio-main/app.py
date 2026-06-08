@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
-from flask import Flask, request, jsonify, send_file, render_template_string, send_from_directory
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import torchaudio
@@ -21,7 +21,6 @@ from models import AcousticModel, MultimodalModel
 from model_service import ModelInferenceService
 from database import Database
 from config import Config
-from ml_models.classical_baselines import build_dataset, train_and_save
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -37,20 +36,15 @@ os.makedirs(app.config['MODELS_FOLDER'], exist_ok=True)
 db = Database(app.config['DATABASE_PATH'])
 inference_service = None
 
-
-def allowed_file(filename):
-    """Check whether an uploaded file has a supported audio extension."""
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
 def init_models():
     """Initialize model inference service"""
     global inference_service
     try:
         inference_service = ModelInferenceService(app.config['MODELS_FOLDER'])
-        print("Models initialized successfully")
+        print("✓ Models initialized successfully")
         return True
     except Exception as e:
-        print(f"Error initializing models: {str(e)}")
+        print(f"✗ Error initializing models: {str(e)}")
         return False
 
 @app.before_request
@@ -59,20 +53,6 @@ def before_request():
     global inference_service
     if inference_service is None:
         init_models()
-
-@app.route('/', methods=['GET'])
-@app.route('/index.html', methods=['GET'])
-def serve_dashboard():
-    """Serve the dashboard HTML"""
-    try:
-        index_path = Path(__file__).parent / 'index.html'
-        if index_path.exists():
-            with open(index_path, 'r', encoding='utf-8') as f:
-                return f.read()
-        else:
-            return jsonify({'error': f'Dashboard not found at {index_path}'}), 404
-    except Exception as e:
-        return jsonify({'error': f'Error serving dashboard: {str(e)}'}), 500
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -99,11 +79,6 @@ def analyze_audio():
         audio_file = uploaded_file
         if audio_file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
-
-        if not allowed_file(audio_file.filename):
-            return jsonify({
-                'error': f"Unsupported file type. Allowed types: {', '.join(sorted(app.config['ALLOWED_EXTENSIONS']))}"
-            }), 400
         
         # Get analysis parameters
         modality = request.form.get('modality', 'multimodal')  # language, acoustic, multimodal
@@ -128,6 +103,19 @@ def analyze_audio():
         
         # Run analysis
         results = inference_service.analyze(filepath, modality)
+
+        # Ensure signal-level features included (fallback if inference service didn't attach)
+        try:
+            if results.get('success'):
+                # attach features if missing
+                if 'signal_features' not in results.get('data', {}):
+                    try:
+                        features = inference_service._extract_audio_features(filepath)
+                    except Exception:
+                        features = {}
+                    results['data']['signal_features'] = features
+        except Exception:
+            pass
         
         if results['success']:
             # Save to database
@@ -249,41 +237,6 @@ def get_statistics():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/train-baselines', methods=['POST'])
-def train_baselines():
-    """Train SVM and Random Forest baseline models from a manifest CSV."""
-    try:
-        payload = request.get_json(silent=True) or {}
-        manifest_path = payload.get('manifest') or request.form.get('manifest')
-        out_dir = payload.get('out_dir') or request.form.get('out_dir') or app.config['MODELS_FOLDER']
-
-        if not manifest_path:
-            return jsonify({'error': 'manifest path is required'}), 400
-
-        project_root = Path(__file__).resolve().parent
-        manifest_path = Path(manifest_path)
-        if not manifest_path.is_absolute():
-            manifest_path = project_root / manifest_path
-        out_dir = Path(out_dir)
-        if not out_dir.is_absolute():
-            out_dir = project_root / out_dir
-
-        if not manifest_path.exists():
-            return jsonify({'error': f'manifest not found: {manifest_path}'}), 404
-
-        X, y = build_dataset(str(manifest_path))
-        train_and_save(X, y, str(out_dir))
-
-        return jsonify({
-            'success': True,
-            'manifest': manifest_path,
-            'out_dir': out_dir,
-            'models': ['svm_baseline.joblib', 'rf_baseline.joblib']
-        }), 200
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify({'error': 'Baseline training failed', 'details': str(e)}), 500
-
 @app.route('/api/models', methods=['GET'])
 def list_models():
     """List available models and their info"""
@@ -294,6 +247,17 @@ def list_models():
         models_info = inference_service.get_available_models()
         return jsonify(models_info), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/', methods=['GET'])
+def serve_index():
+    """Serve index.html"""
+    try:
+        index_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html')
+        return send_file(index_path, mimetype='text/html')
+    except Exception as e:
+        print(f"Error serving index: {str(e)}")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.errorhandler(404)
@@ -313,7 +277,7 @@ if __name__ == '__main__':
     
     # Initialize database
     db.init_db()
-    print("Database initialized")
+    print("✓ Database initialized")
     
     # Start Flask app
     app.run(

@@ -166,20 +166,36 @@ class ModelInferenceService:
             print(f"[DEBUG] Audio shape: {audio.shape}")
             print(f"[DEBUG] Running {modality} analysis...")
             
+            # Extract signal-level features (MFCC, pitch, energy, pauses, repetitions, prolongations)
+            try:
+                signal_features = self._extract_audio_features(audio_path)
+            except Exception as feat_e:
+                print(f"Warning: feature extraction failed: {feat_e}")
+                signal_features = {}
+
             # Run analysis based on modality
             if modality == 'acoustic':
                 if self.acoustic_model is None:
                     return {'success': False, 'error': 'Acoustic model not loaded'}
                 print("[DEBUG] Calling _analyze_acoustic...")
-                return self._analyze_acoustic(audio, audio_path)
+                result = self._analyze_acoustic(audio, audio_path)
+                if result.get('success'):
+                    result['data']['signal_features'] = signal_features
+                return result
             elif modality == 'language':
                 print("[DEBUG] Calling _analyze_language...")
-                return self._analyze_language(audio_path)
+                result = self._analyze_language(audio_path)
+                if result.get('success'):
+                    result['data']['signal_features'] = signal_features
+                return result
             elif modality == 'multimodal':
                 if self.acoustic_model is None or self.multimodal_model is None:
                     return {'success': False, 'error': 'Required models not loaded'}
                 print("[DEBUG] Calling _analyze_multimodal...")
-                return self._analyze_multimodal(audio, audio_path)
+                result = self._analyze_multimodal(audio, audio_path)
+                if result.get('success'):
+                    result['data']['signal_features'] = signal_features
+                return result
             else:
                 return {'success': False, 'error': 'Invalid modality'}
         
@@ -388,38 +404,6 @@ class ModelInferenceService:
             frame_preds_np = self._resample_sequence(frame_preds_np, num_frames)
             if frame_probs_np is not None:
                 frame_probs_np = self._resample_sequence(frame_probs_np, num_frames)
-
-            # Apply simple temporal smoothing to probabilities (median filter)
-            def median_smooth(arr, kernel=5):
-                if arr is None:
-                    return None
-                if arr.ndim == 1:
-                    arr = arr[:, None]
-                out = np.zeros_like(arr)
-                pad = kernel // 2
-                padded = np.pad(arr, ((pad, pad), (0,0)), mode='edge')
-                for i in range(arr.shape[0]):
-                    window = padded[i:i+kernel]
-                    out[i] = np.median(window, axis=0)
-                return out
-
-            if frame_probs_np is not None:
-                try:
-                    frame_probs_np = median_smooth(frame_probs_np, kernel=5)
-                except Exception:
-                    pass
-
-            # Optional calibration: if a calibration file exists, apply linear scaling
-            calib_path = os.path.join(self.models_path, 'calibration.npy')
-            if os.path.exists(calib_path):
-                try:
-                    calib = np.load(calib_path, allow_pickle=True).item()
-                    scale = np.array(calib.get('scale', 1.0))
-                    offset = np.array(calib.get('offset', 0.0))
-                    if frame_probs_np is not None:
-                        frame_probs_np = np.clip(frame_probs_np * scale + offset, 0.0, 1.0)
-                except Exception:
-                    pass
             
             # Create frame predictions
             frame_predictions = []
@@ -532,3 +516,125 @@ class ModelInferenceService:
             'device': str(self.device),
             'models_loaded': self.models_loaded
         }
+
+    def _extract_audio_features(self, audio_path):
+        """Extract signal-level features: MFCC mean/std, pitch stats, energy/rms stats, pauses, repetitions, prolongations"""
+        try:
+            import librosa
+            import numpy as np
+
+            y, sr = librosa.load(audio_path, sr=16000, mono=True)
+
+            # MFCCs
+            mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+            mfcc_mean = np.mean(mfcc, axis=1).tolist()
+            mfcc_std = np.std(mfcc, axis=1).tolist()
+
+            # Energy (RMS)
+            hop_length = 512
+            frame_length = 1024
+            rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
+            energy_mean = float(np.mean(rms))
+            energy_std = float(np.std(rms))
+
+            # Pitch (fundamental frequency) using YIN
+            try:
+                f0 = librosa.yin(y, fmin=50, fmax=500, sr=sr, frame_length=frame_length, hop_length=hop_length)
+                voiced_mask = ~np.isnan(f0)
+                pitch_mean = float(np.nanmean(f0)) if voiced_mask.any() else 0.0
+                pitch_std = float(np.nanstd(f0)) if voiced_mask.any() else 0.0
+                voiced_ratio = float(np.sum(voiced_mask) / len(f0))
+            except Exception:
+                f0 = None
+                pitch_mean = 0.0
+                pitch_std = 0.0
+                voiced_ratio = 0.0
+
+            # Silence / pauses detection
+            intervals = librosa.effects.split(y, top_db=30)
+            # intervals are non-silent; compute silent gaps
+            pauses = []
+            if intervals.shape[0] > 0:
+                # compute gaps between consecutive non-silent intervals
+                for i in range(len(intervals) - 1):
+                    gap_samples = intervals[i+1, 0] - intervals[i, 1]
+                    gap_seconds = gap_samples / sr
+                    if gap_seconds > 0.15:
+                        pauses.append(gap_seconds)
+            total_pause_time = float(np.sum(pauses)) if pauses else 0.0
+            pause_count = int(len(pauses))
+            avg_pause = float(np.mean(pauses)) if pauses else 0.0
+
+            # Voiced segments (from voiced_mask if available)
+            prolongations = 0
+            repetitions = 0
+            if 'f0' in locals() and f0 is not None:
+                # find contiguous voiced segments
+                mask = ~np.isnan(f0)
+                if mask.any():
+                    # convert frame indices to times
+                    frame_times = librosa.frames_to_time(np.arange(len(f0)), sr=sr, hop_length=hop_length)
+                    # find contiguous voiced segments
+                    segments = []
+                    start_idx = None
+                    for i, v in enumerate(mask):
+                        if v and start_idx is None:
+                            start_idx = i
+                        if not v and start_idx is not None:
+                            segments.append((start_idx, i-1))
+                            start_idx = None
+                    if start_idx is not None:
+                        segments.append((start_idx, len(mask)-1))
+
+                    # analyze segments for prolongations and repetitions
+                    for seg in segments:
+                        start_t = frame_times[seg[0]]
+                        end_t = frame_times[seg[1]] + (frame_length/sr)
+                        dur = end_t - start_t
+                        if dur >= 1.0:
+                            prolongations += 1
+                        # short segments separated by tiny gaps may indicate repetitions
+                    # simple heuristic for repetitions: count sequences of short voiced segments (<0.35s) separated by gaps <0.15s and length>=2
+                    short_segments = []
+                    for seg in segments:
+                        start_t = frame_times[seg[0]]
+                        end_t = frame_times[seg[1]] + (frame_length/sr)
+                        dur = end_t - start_t
+                        short_segments.append((start_t, end_t, dur))
+                    i = 0
+                    while i < len(short_segments) - 1:
+                        seq_count = 1
+                        j = i
+                        while j < len(short_segments) - 1:
+                            gap = short_segments[j+1][0] - short_segments[j][1]
+                            if gap < 0.15 and short_segments[j][2] < 0.35 and short_segments[j+1][2] < 0.35:
+                                seq_count += 1
+                                j += 1
+                            else:
+                                break
+                        if seq_count >= 2:
+                            repetitions += 1
+                            i = j + 1
+                        else:
+                            i += 1
+
+            features = {
+                'mfcc_mean': mfcc_mean,
+                'mfcc_std': mfcc_std,
+                'energy_mean': energy_mean,
+                'energy_std': energy_std,
+                'pitch_mean': pitch_mean,
+                'pitch_std': pitch_std,
+                'voiced_ratio': voiced_ratio,
+                'pause_count': pause_count,
+                'total_pause_time': total_pause_time,
+                'avg_pause': avg_pause,
+                'prolongations': int(prolongations),
+                'repetitions': int(repetitions)
+            }
+
+            return features
+
+        except Exception as e:
+            print(f"Error extracting audio features: {e}")
+            return {}

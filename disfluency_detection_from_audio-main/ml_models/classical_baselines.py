@@ -17,22 +17,13 @@ from sklearn.metrics import classification_report
 
 
 def load_feature_vector(npz_path):
-    # Support either precomputed .npz feature files or raw wav paths
-    p = str(npz_path)
-    if p.endswith('.npz'):
-        data = np.load(p)
-        mfcc = data.get("mfcc")
-        pitch = data.get("pitch")
-        energy = data.get("energy")
-        if mfcc is None:
-            return data['features']
-        feats = np.concatenate([mfcc.mean(axis=0), mfcc.std(axis=0), [np.mean(pitch)], [np.std(pitch)], [np.mean(energy)], [np.std(energy)]])
-        return feats
-    else:
-        # assume raw wav path: compute features on the fly
-        from ml_models.features import extract_acoustic_features
-        feats = extract_acoustic_features(wav_path=p)
-        return feats
+    data = np.load(npz_path)
+    mfcc = data["mfcc"]
+    pitch = data["pitch"]
+    energy = data["energy"]
+    # simple pooling: mean and std
+    feats = np.concatenate([mfcc.mean(axis=0), mfcc.std(axis=0), [pitch.mean()], [pitch.std()], [energy.mean()], [energy.std()]])
+    return feats
 
 
 def build_dataset(manifest_csv):

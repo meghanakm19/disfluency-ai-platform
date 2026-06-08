@@ -26,7 +26,7 @@ class Config:
     DATABASE_PATH = os.path.join(DATABASE_FOLDER, 'analysis.db')
     
     # Allowed file extensions
-    ALLOWED_EXTENSIONS = {'wav', 'mp3', 'ogg', 'm4a', 'flac', 'webm'}
+    ALLOWED_EXTENSIONS = {'wav', 'mp3', 'ogg', 'm4a', 'flac'}
     
     # Model settings
     DEVICE = 'cuda' if os.getenv('CUDA_VISIBLE_DEVICES') else 'cpu'

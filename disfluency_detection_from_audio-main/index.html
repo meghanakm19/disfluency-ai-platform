@@ -21,92 +21,22 @@
             --danger-color: #f44336;
             --light-bg: #f5f5f5;
             --dark-bg: #1a1a1a;
-            --text-color: #e6eefb;
+            --text-color: #333;
             --border-color: #ddd;
-            --glass: rgba(255,255,255,0.03);
-        }
-
-        /* Responsive layout tweaks */
-        @media (max-width: 800px) {
-            .container { padding: 8px; }
-            .card { padding: 10px; }
-            .sidebar { width: 72px; }
         }
 
         body {
-            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-            background: linear-gradient(180deg,#081122 0%, #101c3d 50%, #1b2b55 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
             color: var(--text-color);
-            margin: 0;
         }
 
-        .btn.fancy {
-            position: relative;
-            overflow: hidden;
-            transition: box-shadow 160ms ease, transform 120ms ease;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        .btn.fancy:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            transform: translateY(-3px);
-        }
-        .btn.fancy::after {
-            content: '';
-            position: absolute;
-            left: -50%; top: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle at center, rgba(255,255,255,0.08), rgba(255,255,255,0));
-            transform: scale(0);
-            transition: transform 400ms ease;
-            pointer-events: none;
-        }
-        .btn.fancy:hover::after { transform: scale(1); }
-
-        /* Custom cursor */
-        .custom-cursor {
-            position: fixed; z-index: 9999; pointer-events: none;
-            width: 14px; height: 14px; border-radius: 50%;
-            background: rgba(0,0,0,0.7); transform: translate(-50%, -50%);
-            transition: width 120ms ease, height 120ms ease, background 120ms ease, transform 80ms ease;
-            mix-blend-mode: difference;
-        }
-        .custom-cursor.big { width: 34px; height: 34px; background: rgba(255,255,255,0.9); }
-
-        /* Pointer trail dots */
-        .cursor-dot { position: fixed; width:8px; height:8px; border-radius:50%; background: rgba(0,0,0,0.2); pointer-events:none; z-index:9998; transition: transform 120ms linear, opacity 200ms linear; }
-
-        /* Layout shell */
-        .app-shell { display: flex; min-height: 100vh; }
-        .sidebar { width: 280px; background: rgba(255,255,255,0.03); padding: 24px; box-shadow: 2px 0 12px rgba(2,6,23,0.4); }
-        .main-content { flex: 1; min-height: 100vh; padding: 24px; overflow:auto; }
-        .sidebar-brand { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
-        .brand-text { color:#cfe7ff; font-weight:700; }
-        .sidebar-nav { display:flex; flex-direction:column; gap:8px; }
-        .sidebar .nav-btn { text-align:left; padding:10px 12px; border-radius:8px; background:transparent; border:0; color:#e6eefb; }
-        .sidebar .nav-btn.active { background: rgba(255,255,255,0.04); }
-
-        /* Keep main-width fully utilized: no max-width wrapper */
-
-        /* Home page styles */
-        .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; padding: 28px; }
-        .hero-left { color: #e6eefb; }
-        .hero-title { font-size: 36px; color: #fff; margin-bottom: 12px; }
-        .hero-sub { color: #cfe7ff; margin-bottom: 18px; line-height: 1.4; }
-        .hero-ctas .btn-large { padding: 12px 20px; margin-right: 10px; }
-        .visual-card { display:flex; align-items:center; justify-content:center; }
-
-        .features-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:16px; margin-top: 24px; }
-        .feature-card { background: rgba(255,255,255,0.03); padding:18px; border-radius:12px; box-shadow: 0 6px 18px rgba(2,6,23,0.4); color:#dbeafe; }
-        .feature-card h4 { margin-bottom:8px; color:#fff; }
-
-        .live-stats { display:flex; gap:18px; margin-top:20px; }
-        .live-stats .stat { background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); padding:12px 18px; border-radius:10px; color:#fff; font-weight:700; }
-        .stat-label { font-weight:400; font-size:12px; color:#cbd5e1; }
-
-        /* Dark theme backgrounds */
-        body { background: linear-gradient(180deg,#081122 0%, #101c3d 50%, #1b2b55 100%); }
-
-        /* Responsive adjustments */
-        @media (max-width: 1000px) { .hero { grid-template-columns: 1fr; } .features-grid { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 600px) { .features-grid { grid-template-columns: 1fr; } }
 
         /* Header */
         header {
@@ -1012,141 +942,38 @@
     </style>
 </head>
 <body>
-    <div class="app-shell">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="header-icon">🎤</div>
-                <div class="brand-text">Disfluency AI</div>
-            </div>
-            <nav class="sidebar-nav">
-                <button class="nav-btn active" onclick="switchTab('home')">🏠 Home</button>
-                <button class="nav-btn" onclick="switchTab('upload')">📤 Upload</button>
-                <button class="nav-btn" onclick="switchTab('record')">🎙 Record</button>
-                <button class="nav-btn" onclick="switchTab('results')">📊 Results</button>
-                <button class="nav-btn" onclick="switchTab('history')">📜 History</button>
-                <button class="nav-btn" onclick="switchTab('analytics')">📈 Analytics</button>
-                <button class="nav-btn" onclick="switchTab('settings')">⚙ Settings</button>
-            </nav>
-        </aside>
-
-        <!-- Main content area -->
-        <main class="main-content">
+    <div class="container">
         <!-- Header -->
         <header>
             <div class="header-title">
-                <div class="header-icon">🎤</div>
-                <div>
-                    <h1>Stuttering Disfluency Detection</h1>
-                    <div class="header-subtitle">Using Machine Learning Approaches</div>
-                </div>
+                                <th>Analysis</th>
+                                <th>Filename</th>
+                                <th>User ID</th>
+                                <th>Modality</th>
+                                <th>Date</th>
+                                <th>Actions</th>
             </div>
             <div class="header-actions">
                 <div style="text-align: right;">
                     <div style="font-size: 12px; color: #666;" id="statusText">Status: Ready</div>
                     <div id="statusIndicator" class="status-indicator success" style="display: inline-block;"></div>
                 </div>
-                <!-- Decorative SVG image (no external files needed) -->
-                <div style="margin-left:12px;">
-                    <svg width="80" height="48" viewBox="0 0 160 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <rect x="0" y="8" width="152" height="72" rx="10" fill="#fff" opacity="0.06"/>
-                        <g transform="translate(12,18)">
-                            <circle cx="16" cy="28" r="10" fill="#fff" opacity="0.95"/>
-                            <rect x="44" y="18" width="84" height="20" rx="6" fill="#fff" opacity="0.95"/>
-                        </g>
-                    </svg>
-                </div>
             </div>
         </header>
 
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
-            <button class="nav-btn active" onclick="switchTab('home')">🏠 Home</button>
-            <button class="nav-btn" onclick="switchTab('upload')">📤 Upload Audio</button>
-            <button class="nav-btn" onclick="switchTab('record')">🎙 Record Audio</button>
-            <button class="nav-btn" onclick="switchTab('results')">📊 Results</button>
-            <button class="nav-btn" onclick="switchTab('history')">📜 History</button>
-            <button class="nav-btn" onclick="switchTab('analytics')">📈 Analytics</button>
-            <button class="nav-btn" onclick="switchTab('settings')">⚙ Settings</button>
+            <button class="nav-btn active" onclick="switchTab('upload')">Upload Audio</button>
+            <button class="nav-btn" onclick="switchTab('record')">Record Audio</button>
+            <button class="nav-btn" onclick="switchTab('results')">Results</button>
+            <button class="nav-btn" onclick="switchTab('history')">History</button>
+            <button class="nav-btn" onclick="switchTab('analytics')">Analytics</button>
         </div>
 
         <!-- Main Content -->
         <div class="content">
-            <!-- HOME SECTION -->
-            <div id="home" class="section active">
-                <div class="hero">
-                    <div class="hero-left">
-                        <h1 class="hero-title">AI-Powered Stuttering & Disfluency Detection</h1>
-                        <p class="hero-sub">Advanced machine learning system for detecting
-                        speech disfluencies, stuttering patterns,
-                        repetitions, prolongations, and speech fluency metrics.</p>
-                        <div class="hero-ctas">
-                            <button class="btn btn-primary btn-large" onclick="switchTab('upload')">📤 Upload Audio</button>
-                            <button class="btn btn-outline btn-large" onclick="switchTab('record')">🎙 Start Recording</button>
-                        </div>
-                        <div class="project-desc">
-                            <h3>Disfluency AI</h3>
-                            <p>Disfluency AI is an intelligent speech analysis
-                            platform designed to identify and evaluate speech
-                            disfluencies using advanced machine learning models.</p>
-                            <ul>
-                                <li>Audio Upload Analysis</li>
-                                <li>Real-Time Recording</li>
-                                <li>Frame-by-Frame Detection</li>
-                                <li>Confidence Scoring & Therapist Reports</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="hero-right">
-                        <div class="visual-card">
-                            <!-- animated microphone SVG -->
-                            <svg width="300" height="220" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg">
-                                <defs><linearGradient id="hg" x1="0" x2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#34d399"/></linearGradient></defs>
-                                <rect x="0" y="0" width="300" height="220" rx="18" fill="url(#hg)" opacity="0.06"/>
-                                <g transform="translate(80,20)">
-                                    <rect x="50" y="20" width="40" height="90" rx="20" fill="#fff" opacity="0.95"/>
-                                </g>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                <!-- Feature cards -->
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <h4>Upload Analysis</h4>
-                        <p>Analyze uploaded speech recordings using AI-powered detection algorithms.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>Real-Time Recording</h4>
-                        <p>Capture speech directly from microphone and process instantly.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>Disfluency Detection</h4>
-                        <p>Detect stuttering, repetitions, prolongations and speech blocks.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>Confidence Scores</h4>
-                        <p>Measure confidence for each detected event.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>History Tracking</h4>
-                        <p>Store and review previous analyses.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>Analytics Dashboard</h4>
-                        <p>Advanced charts and insights.</p>
-                    </div>
-                </div>
-                <div class="live-stats">
-                    <div class="stat">95%<div class="stat-label">Detection Accuracy</div></div>
-                    <div class="stat">50MB<div class="stat-label">Upload Support</div></div>
-                    <div class="stat">5+<div class="stat-label">Audio Formats</div></div>
-                    <div class="stat">Real-Time<div class="stat-label">Processing</div></div>
-                </div>
-            </div>
-
             <!-- UPLOAD SECTION -->
-            <div id="upload" class="section" style="display:none;">
+            <div id="upload" class="section active">
                 <div class="card">
                     <div class="card-title">📁 Upload Audio File</div>
                     
@@ -1249,19 +1076,6 @@
                 <div class="card" id="noResultsCard">
                     <div style="text-align: center; padding: 40px;">
                         <div style="font-size: 48px; margin-bottom: 15px;">📊</div>
-                        <!-- decorative svg -->
-                        <div style="margin-top:12px;">
-                            <svg width="220" height="80" viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <defs>
-                                    <linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#34d399"/></linearGradient>
-                                </defs>
-                                <rect x="8" y="8" width="204" height="64" rx="10" fill="url(#g2)" opacity="0.08"/>
-                                <g fill="#fff" opacity="0.95">
-                                    <rect x="28" y="28" width="40" height="12" rx="4"/>
-                                    <rect x="76" y="22" width="100" height="8" rx="4"/>
-                                </g>
-                            </svg>
-                        </div>
                         <div style="font-size: 16px; color: #666;">No analysis results yet</div>
                         <div style="font-size: 12px; color: #999; margin-top: 10px;">Upload or record an audio file and click Analyze to see results</div>
                     </div>
@@ -1331,43 +1145,10 @@
 
                     <!-- Actions -->
                     <div style="margin-top: 30px; display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="analyzeAudio()" title="Re-analyze the current audio file">🔄 Analyze Again</button>
                         <button class="btn btn-success" onclick="downloadResults()">📥 Download Results</button>
                         <button class="btn btn-secondary" onclick="newAnalysis()">↻ New Analysis</button>
                     </div>
-                </div>
-            </div>
-
-            <!-- HISTORY SECTION -->
-            <div id="history" class="section" style="display:none;">
-                <div class="card">
-                    <div class="card-title">📜 History</div>
-                    <div style="margin-top:12px">Search and review previous analyses.</div>
-                    <div style="margin-top:12px"><input id="historySearch" placeholder="Search by user, notes, or file" style="width:60%"/></div>
-                    <div style="margin-top:12px"><button class="btn" onclick="exportHistory()">Export CSV</button></div>
-                </div>
-            </div>
-
-            <!-- ANALYTICS SECTION placeholder (already present) -->
-            
-            <!-- SETTINGS SECTION -->
-            <div id="settings" class="section" style="display:none;">
-                <div class="card">
-                    <div class="card-title">⚙ Settings</div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
-                        <div class="card" style="background:transparent;padding:12px;">
-                            <h4>General</h4>
-                            <label>Theme Mode</label><br/>
-                            <select id="settingTheme"><option>Dark</option><option>Light</option></select>
-                            <div style="margin-top:8px">Language<br/><select id="settingLang"><option>English</option></select></div>
-                        </div>
-                        <div class="card" style="background:transparent;padding:12px;">
-                            <h4>Analysis</h4>
-                            <label>Default Modality</label><br/>
-                            <select id="settingModality"><option>acoustic</option><option>multimodal</option></select>
-                            <div style="margin-top:8px">Confidence Threshold<br/><input type="range" id="settingConf" min="0" max="1" step="0.01" value="0.5"/></div>
-                        </div>
-                    </div>
-                    <div style="margin-top:12px"><button class="btn btn-primary" onclick="saveSettings()">Save Settings</button></div>
                 </div>
             </div>
 
@@ -1437,17 +1218,6 @@
 
                     <div style="margin-top: 30px;">
                         <h3 style="color: var(--primary-color); margin-bottom: 15px;">Analyses by Type</h3>
-                        <!-- analytics illustration -->
-                        <div style="position:absolute; right:24px; top:140px; opacity:0.9;">
-                            <svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <rect x="4" y="4" width="112" height="72" rx="8" fill="#fff" opacity="0.04"/>
-                                <g transform="translate(8,12)" fill="#34d399">
-                                    <rect x="0" y="28" width="10" height="20" rx="2"/>
-                                    <rect x="18" y="18" width="10" height="30" rx="2"/>
-                                    <rect x="36" y="8" width="10" height="40" rx="2"/>
-                                </g>
-                            </svg>
-                        </div>
                         <div class="chart-grid">
                             <div class="card chart-card" style="box-shadow: none; border: 1px solid var(--border-color);">
                                 <div class="card-title">🧩 Modality Breakdown</div>
@@ -1495,7 +1265,6 @@
         });
 
         // Tab Switching
-            
         function switchTab(tabName) {
             // Hide all sections
             document.querySelectorAll('.section').forEach(el => {
@@ -1503,12 +1272,7 @@
             });
             
             // Show selected section
-            const s = document.getElementById(tabName);
-            if (s) {
-                document.querySelectorAll('.section').forEach(el=> el.style.display='none');
-                s.style.display = '';
-                s.classList.add('active');
-            }
+            document.getElementById(tabName).classList.add('active');
             
             // Update nav buttons
             document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -1533,23 +1297,6 @@
         }
 
         // Drag & Drop
-
-        // Custom cursor and pointer trail removed per user request (animations paused)
-
-        // Simple helpers for settings/history
-        function saveSettings(){
-            const theme = document.getElementById('settingTheme').value;
-            const lang = document.getElementById('settingLang').value;
-            const modality = document.getElementById('settingModality').value;
-            const conf = document.getElementById('settingConf').value;
-            showAlert('Settings saved', 'success');
-        }
-        function exportHistory(){ showAlert('Export started', 'info'); }
-
-        // Ensure Home is visible on first load
-        document.addEventListener('DOMContentLoaded', () => {
-            try { switchTab('home'); } catch (e) { console.warn(e); }
-        });
         function setupDragDrop() {
             const uploadArea = document.getElementById('uploadArea');
             
@@ -1602,11 +1349,15 @@
         function handleAudioFile(file) {
             currentAudioFile = file;
             
-            // Show file info
+            // Show file info and hide previous results
             document.getElementById('uploadedFileInfo').style.display = 'block';
             document.getElementById('uploadedFileName').textContent = file.name;
             document.getElementById('uploadedFileSize').textContent = formatFileSize(file.size);
             document.getElementById('uploadedFileType').textContent = file.type || 'Unknown';
+            
+            // Hide results from previous analysis so user knows they need to analyze this new file
+            document.getElementById('resultsCard').style.display = 'none';
+            document.getElementById('noResultsCard').style.display = 'block';
             
             showAlert('File selected successfully', 'info');
         }
@@ -2060,13 +1811,14 @@
                 const tbody = document.getElementById('historyTable');
                 tbody.innerHTML = '';
 
-                if (data.analyses && data.analyses.length > 0) {
+                        if (data.analyses && data.analyses.length > 0) {
                     data.analyses.forEach((analysis) => {
                         const row = tbody.insertRow();
                         const date = new Date(analysis.created_at).toLocaleDateString();
-                        row.innerHTML = `
+                                row.innerHTML = `
                             <td>${analysis.analysis_id.substring(0, 10)}...</td>
                             <td>${analysis.filename}</td>
+                            <td>${analysis.user_id || ''}</td>
                             <td><span class="badge badge-primary">${analysis.modality}</span></td>
                             <td>${date}</td>
                             <td>
@@ -2076,7 +1828,7 @@
                         `;
                     });
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #999;">${userId ? 'No analyses found for this user' : 'No history yet'}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #999;">${userId ? 'No analyses found for this user' : 'No history yet'}</td></tr>`;
                 }
             } catch (error) {
                 console.error('Error loading history:', error);
@@ -2170,8 +1922,88 @@
             switchTab('upload');
         }
 
+        function generateTherapistSummary(results) {
+            return buildTherapistReport(results);
+        }
+
         function loadResultFromHistory(analysisId) {
             // Load and display specific analysis result
+            (async () => {
+                try {
+                    const response = await fetch(`${API_URL}/results/${analysisId}`);
+                    if (!response.ok) {
+                        showAlert('Failed to load analysis result', 'error');
+                        return;
+                    }
+                    const data = await response.json();
+
+                    // Ensure results card visible
+                    document.getElementById('noResultsCard').style.display = 'none';
+                    document.getElementById('resultsCard').style.display = 'block';
+
+                    // Populate top-level info
+                    document.getElementById('totalFrames').textContent = data.results.statistics?.total_frames || 0;
+                    document.getElementById('disfluencyCount').textContent = data.results.statistics?.disfluent_frames || 0;
+                    document.getElementById('disfluencyRate').textContent = (data.results.statistics?.disfluency_rate || 0) + '%';
+                    document.getElementById('confidence').textContent = Math.round((data.results.statistics && data.results.statistics.acoustic_avg_confidence) ? data.results.statistics.acoustic_avg_confidence * 100 : (data.results.confidence || 0) * 100) + '%';
+
+                    // Populate disfluency table
+                    const tbody = document.getElementById('disfluencyTable');
+                    tbody.innerHTML = '';
+                    const predictions = data.results.predictions || [];
+                    if (predictions.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #999;">No disfluencies detected</td></tr>`;
+                    } else {
+                        let idx = 1;
+                        predictions.filter(p => p.is_disfluent).forEach((p) => {
+                            const r = tbody.insertRow();
+                            const dur = (p.end_time - p.start_time).toFixed(2) + 's';
+                            r.innerHTML = `
+                                <td>${idx++}</td>
+                                <td>${p.start_time.toFixed(2)} - ${p.end_time.toFixed(2)}s</td>
+                                <td>${(p.disfluency_types || []).join(', ') || 'Unknown'}</td>
+                                <td>${dur}</td>
+                                <td>${Math.round((p.confidence || 0) * 100)}%</td>
+                            `;
+                        });
+                    }
+
+                    // Therapist summary
+                    const reportCard = document.getElementById('therapistReportCard');
+                    const reportBody = document.getElementById('therapistReportBody');
+                    reportCard.style.display = 'block';
+                    reportBody.innerHTML = generateTherapistSummary(data.results);
+
+                    // Signal-level features display
+                    const features = data.results.signal_features || {};
+                    let featuresHtml = `<div style="margin-top:18px"><h4>Signal Features</h4><ul style="padding-left:18px;">
+                        <li><strong>MFCC (mean):</strong> ${features.mfcc_mean ? features.mfcc_mean.map(v=>v.toFixed(2)).join(', ') : 'N/A'}</li>
+                        <li><strong>MFCC (std):</strong> ${features.mfcc_std ? features.mfcc_std.map(v=>v.toFixed(2)).join(', ') : 'N/A'}</li>
+                        <li><strong>Pitch mean / std:</strong> ${features.pitch_mean?.toFixed(2) || '0.00'} Hz / ${features.pitch_std?.toFixed(2) || '0.00'}</li>
+                        <li><strong>Energy mean / std:</strong> ${features.energy_mean?.toFixed(4) || '0.0000'} / ${features.energy_std?.toFixed(4) || '0.0000'}</li>
+                        <li><strong>Voiced ratio:</strong> ${(features.voiced_ratio*100 || 0).toFixed(1)}%</li>
+                        <li><strong>Pauses:</strong> ${features.pause_count || 0} (avg ${features.avg_pause?.toFixed(2) || '0.00'}s, total ${features.total_pause_time?.toFixed(2) || '0.00'}s)</li>
+                        <li><strong>Repetitions (heuristic):</strong> ${features.repetitions || 0}</li>
+                        <li><strong>Prolongations (heuristic):</strong> ${features.prolongations || 0}</li>
+                    </ul></div>`;
+
+                    // append or replace existing features section
+                    let existing = document.getElementById('signalFeaturesSection');
+                    if (existing) existing.remove();
+                    const container = document.getElementById('resultsCard');
+                    const div = document.createElement('div');
+                    div.id = 'signalFeaturesSection';
+                    div.innerHTML = featuresHtml;
+                    container.appendChild(div);
+
+                    // Scroll to results
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                } catch (error) {
+                    console.error('Error loading result:', error);
+                    showAlert('Error loading result', 'error');
+                }
+            })();
         }
 
         async function deleteAnalysis(analysisId) {
