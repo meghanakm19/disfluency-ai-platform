@@ -71,27 +71,35 @@ def analyze_audio():
     Returns: Prediction results with timestamps and confidence scores
     """
     try:
+        print("=== DEBUG REQUEST ===")
+        print("FILES:", request.files)
+        print("FORM:", request.form)
+        print("audio:", request.files.get('audio'))
+        print("file:", request.files.get('file'))
+        print("modality:", request.form.get('modality'))
+        print("====================")
+
         # Check if file is in request
         uploaded_file = request.files.get('audio') or request.files.get('file')
+
         if uploaded_file is None:
             return jsonify({'error': 'No audio file provided'}), 400
 
         audio_file = uploaded_file
+
         if audio_file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
-        
+
         # Get analysis parameters
-        modality = request.form.get('modality', 'multimodal')  # language, acoustic, multimodal
+        modality = request.form.get('modality', 'multimodal')
         user_id = request.form.get('user_id', 'anonymous')
         notes = request.form.get('notes', '')
-        
+
         # Validate modality
         if modality not in ['language', 'acoustic', 'multimodal']:
-            return jsonify({'error': 'Invalid modality. Must be: language, acoustic, or multimodal'}), 400
-        
-        if inference_service is None:
-            return jsonify({'error': 'Models not loaded. Please try again.'}), 503
-        
+            return jsonify({
+                'error': f'Invalid modality: {modality}. Must be: language, acoustic, or multimodal'
+            }), 400
         # Save uploaded file
         filename = secure_filename(audio_file.filename)
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
